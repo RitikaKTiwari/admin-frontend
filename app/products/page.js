@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Table from '@/app/_components/Table';
 import { getAdminProducts, deleteProduct } from '@/app/_services/api/admin';
@@ -15,10 +16,8 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   
-  // ✅ DEBOUNCE: Wait 500ms after user stops typing
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // ✅ Update debounced search after 500ms of no typing
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -27,12 +26,7 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // ✅ Load products when page or debounced search changes
-  useEffect(() => {
-    loadProducts();
-  }, [currentPage, debouncedSearch]);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getAdminProducts(currentPage, 10, debouncedSearch);
@@ -45,9 +39,12 @@ export default function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, debouncedSearch]);
 
-  // ✅ Handle search change
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
   const handleSearchChange = (value) => {
     setSearch(value);
     setCurrentPage(1);
@@ -72,10 +69,13 @@ export default function ProductsPage() {
       key: 'image',
       label: 'Image',
       render: (item) => (
-        <img
+        <Image
           src={item.image || 'https://via.placeholder.com/50'}
           alt={item.title}
+          width={48}
+          height={48}
           className="w-12 h-12 object-cover rounded"
+          unoptimized={!item.image?.startsWith('/')}
         />
       ),
     },

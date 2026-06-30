@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { FiEye, FiFilter } from "react-icons/fi";
 import Table from "@/app/_components/Table";
@@ -12,8 +12,7 @@ export default function OrdersPage() {
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  
-  // ✅ FIXED: Separate state for display
+
   const [displayPage, setDisplayPage] = useState(1);
 
   // Filters
@@ -21,25 +20,9 @@ export default function OrdersPage() {
   const [dateFilter, setDateFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
-  // ✅ Load ALL orders (or a large batch) without page dependency
-  useEffect(() => {
-    loadOrders();
-  }, [statusFilter]); // ← Only reload when filter changes
-
-  // ✅ Apply filters whenever orders or dateFilter changes
-  useEffect(() => {
-    applyFilters();
-  }, [orders, dateFilter]);
-
-  // ✅ Reset display page when filters change
-  useEffect(() => {
-    setDisplayPage(1);
-  }, [dateFilter, statusFilter]);
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
     try {
-      // ✅ Fetch all orders (or a large batch) without page
       const data = await getAdminOrders(1, 1000, statusFilter);
       if (data) {
         setOrders(data.orders || []);
@@ -49,9 +32,9 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...orders];
 
     // Apply date filter
@@ -85,16 +68,26 @@ export default function OrdersPage() {
     }
 
     setFilteredOrders(filtered);
-  };
+  }, [orders, dateFilter]);
 
-  // ✅ Get paginated data for table (uses displayPage)
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  useEffect(() => {
+    setDisplayPage(1);
+  }, [dateFilter, statusFilter]);
+
   const getPaginatedData = () => {
     const start = (displayPage - 1) * 10;
     const end = start + 10;
     return filteredOrders.slice(start, end);
   };
 
-  // ✅ Calculate pagination for the table
   const getPagination = () => {
     const total = filteredOrders.length;
     const totalPages = Math.ceil(total / 10);
@@ -110,7 +103,7 @@ export default function OrdersPage() {
     try {
       const result = await updateOrderStatus(orderId, newStatus);
       if (result.success) {
-        alert("✅ Order status updated!");
+        alert("Order status updated!");
         loadOrders();
       }
     } catch (error) {
@@ -147,7 +140,6 @@ export default function OrdersPage() {
     return labels[filter] || labels.all;
   };
 
-  // Table columns with sorting
   const columns = [
     {
       key: "orderId",
@@ -203,7 +195,6 @@ export default function OrdersPage() {
     },
   ];
 
-  // Table actions
   const actions = [
     {
       label: "View",
@@ -238,7 +229,6 @@ export default function OrdersPage() {
 
   return (
     <>
-      {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">Orders</h1>
 
@@ -254,7 +244,6 @@ export default function OrdersPage() {
         </button>
       </div>
 
-      {/* Filter Bar */}
       {showFilters && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
           <div className="flex flex-wrap items-center gap-4">
@@ -341,7 +330,6 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Table with sorting and pagination */}
       <Table
         data={getPaginatedData()}
         columns={columns}

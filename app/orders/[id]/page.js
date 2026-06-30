@@ -163,7 +163,7 @@ export default function OrderDetailPage() {
       <div className="text-center py-16">
         <div className="text-6xl mb-4">📦</div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Order not found</h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">The order you're looking for doesn't exist.</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">The order you&apos;re looking for doesn&apos;t exist.</p>
         <Link href="/orders" className="inline-block mt-4 text-indigo-600 hover:underline">
           ← Back to Orders
         </Link>
