@@ -10,6 +10,7 @@ import {
   FiLogOut
 } from 'react-icons/fi';
 import { adminLogout } from '../_services/api/admin';
+import { usePopup } from '../_context/PopupContext';
 
 const menuItems = [
   { href: '/dashboard', icon: FiHome, label: 'Dashboard' },
@@ -20,9 +21,11 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { showConfirm } = usePopup();
 
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
+  const handleLogout = async () => {
+    const confirmed = await showConfirm('Are you sure you want to logout?', { type: 'warning' });
+    if (confirmed) {
       adminLogout();
     }
   };

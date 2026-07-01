@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FiEye, FiFilter } from "react-icons/fi";
 import Table from "@/app/_components/Table";
 import { getAdminOrders, updateOrderStatus } from "@/app/_services/api/admin";
+import { usePopup } from "@/app/_context/PopupContext";
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function OrdersPage() {
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const { showPopup } = usePopup();
 
   const [displayPage, setDisplayPage] = useState(1);
 
@@ -103,11 +105,11 @@ export default function OrdersPage() {
     try {
       const result = await updateOrderStatus(orderId, newStatus);
       if (result.success) {
-        alert("Order status updated!");
+        await showPopup("Order status updated!", { type: 'success' });
         loadOrders();
       }
     } catch (error) {
-      alert("Failed to update status");
+      await showPopup("Failed to update status", { type: 'error' });
     }
   };
 

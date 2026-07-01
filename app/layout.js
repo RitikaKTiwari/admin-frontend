@@ -7,6 +7,7 @@ import AdminHeader from '@/app/_components/AdminHeader';
 import { isAdminLoggedIn } from '@/app/_services/api/admin';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { PopupProvider } from '@/app/_context/PopupContext';
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
@@ -28,7 +29,9 @@ export default function RootLayout({ children }) {
   if (isLoginPage) {
     return (
       <html lang="en">
-        <body>{children}</body>
+        <body>
+          <PopupProvider>{children}</PopupProvider>
+        </body>
       </html>
     );
   }
@@ -39,7 +42,9 @@ export default function RootLayout({ children }) {
     if (typeof window !== 'undefined' && !isAdminLoggedIn()) {
       return (
         <html lang="en">
-          <body>{children}</body>
+          <body>
+            <PopupProvider>{children}</PopupProvider>
+          </body>
         </html>
       );
     }
@@ -47,15 +52,17 @@ export default function RootLayout({ children }) {
     return (
       <html lang="en">
         <body>
-          <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <AdminHeader />
-              <main className="flex-1 overflow-y-auto p-6">
-                {children}
-              </main>
+          <PopupProvider>
+            <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+              <Sidebar />
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <AdminHeader />
+                <main className="flex-1 overflow-y-auto p-6">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
+          </PopupProvider>
         </body>
       </html>
     );
@@ -63,7 +70,9 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <PopupProvider>{children}</PopupProvider>
+      </body>
     </html>
   );
 }

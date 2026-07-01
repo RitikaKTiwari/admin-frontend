@@ -20,6 +20,7 @@ import {
   FiSend,
 } from "react-icons/fi";
 import { getOrderDetails, updateOrderStatus, sendOrderStatusEmail } from "@/app/_services/api/admin";
+import { usePopup } from "@/app/_context/PopupContext";
 
 export default function OrderDetailPage() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function OrderDetailPage() {
   const [updating, setUpdating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const { showPopup, showConfirm } = usePopup();
 
   useEffect(() => {
     if (orderId) {
@@ -47,26 +49,27 @@ export default function OrderDetailPage() {
       }
     } catch (error) {
       console.error("Error loading order details:", error);
-      alert("Failed to load order details");
+      await showPopup("Failed to load order details", { type: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleStatusUpdate = async (newStatus) => {
-    if (!confirm(`Change order status to "${newStatus}"?`)) return;
+    const confirmed = await showConfirm(`Change order status to "${newStatus}"?`, { type: 'warning' });
+    if (!confirmed) return;
 
     setUpdating(true);
     try {
       const result = await updateOrderStatus(orderId, newStatus);
       if (result.success) {
-        alert("✅ Order status updated!");
+        await showPopup("Order status updated!", { type: 'success' });
         loadOrderDetails();
       } else {
-        alert(result.message || "Failed to update status");
+        await showPopup(result.message || "Failed to update status", { type: 'error' });
       }
     } catch (error) {
-      alert("Failed to update status");
+      await showPopup("Failed to update status", { type: 'error' });
     } finally {
       setUpdating(false);
     }
@@ -79,13 +82,13 @@ export default function OrderDetailPage() {
       const result = await sendOrderStatusEmail(orderId);
       if (result.success) {
         setEmailSent(true);
-        alert("✅ Email sent to customer!");
+        await showPopup("Email sent to customer!", { type: 'success' });
       } else {
-        alert(result.message || "Failed to send email");
+        await showPopup(result.message || "Failed to send email", { type: 'error' });
       }
     } catch (error) {
       console.error("Error sending email:", error);
-      alert("Failed to send email");
+      await showPopup("Failed to send email", { type: 'error' });
     } finally {
       setSendingEmail(false);
     }

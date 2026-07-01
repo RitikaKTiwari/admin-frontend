@@ -21,11 +21,13 @@ import {
   getLowStockProducts,
   exportSalesReport 
 } from '@/app/_services/api/admin';
+import { usePopup } from '@/app/_context/PopupContext';
 
 export default function DashboardPage() {
   // Tabs and general state
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
+  const { showPopup } = usePopup();
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
@@ -92,7 +94,7 @@ export default function DashboardPage() {
     try {
       await exportSalesReport(exportStart, exportEnd);
     } catch (error) {
-      alert('Failed to export sales report CSV.');
+      await showPopup('Failed to export sales report CSV.', { type: 'error' });
     } finally {
       setExporting(false);
     }

@@ -7,12 +7,14 @@ import Image from 'next/image';
 import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Table from '@/app/_components/Table';
 import { getAdminProducts, deleteProduct } from '@/app/_services/api/admin';
+import { usePopup } from '@/app/_context/PopupContext';
 
 export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(true);
+  const { showPopup, showConfirm } = usePopup();
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   
@@ -51,16 +53,17 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (product) => {
-    if (!confirm(`Delete "${product.title}"?`)) return;
+    const confirmed = await showConfirm(`Delete "${product.title}"?`, { type: 'warning' });
+    if (!confirmed) return;
     
     try {
       const result = await deleteProduct(product._id);
       if (result.success) {
-        alert('Product deleted!');
+        await showPopup('Product deleted!', { type: 'success' });
         loadProducts();
       }
     } catch (error) {
-      alert('Failed to delete');
+      await showPopup('Failed to delete', { type: 'error' });
     }
   };
 

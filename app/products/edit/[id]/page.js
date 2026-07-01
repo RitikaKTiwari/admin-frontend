@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProductForm from "@/app/_components/ProductForm";
 import { getAdminProducts, updateProduct } from "@/app/_services/api/admin";
+import { usePopup } from "@/app/_context/PopupContext";
 
 export default function EditProductPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [initialData, setInitialData] = useState(null);
+  const { showPopup } = usePopup();
 
   useEffect(() => {
     if (productId) {
@@ -39,13 +41,13 @@ export default function EditProductPage() {
             isFeatured: product.isFeatured || false,
           });
         } else {
-          alert("Product not found");
+          await showPopup("Product not found", { type: 'error' });
           router.push("/products");
         }
       }
     } catch (error) {
       console.error("Error loading product:", error);
-      alert("Failed to load product");
+      await showPopup("Failed to load product", { type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -56,14 +58,14 @@ export default function EditProductPage() {
     try {
       const result = await updateProduct(productId, productData);
       if (result.success) {
-        alert("Product updated successfully!");
+        await showPopup("Product updated successfully!", { type: 'success' });
         router.push("/products");
       } else {
-        alert(result.message || "Failed to update product");
+        await showPopup(result.message || "Failed to update product", { type: 'error' });
       }
     } catch (error) {
       console.error("Error updating product:", error);
-      alert("Failed to update product");
+      await showPopup("Failed to update product", { type: 'error' });
     } finally {
       setSaving(false);
     }
